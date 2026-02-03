@@ -59,12 +59,41 @@
         android:hint="Id"
         android:textSize="34sp" />
 
-    <View
+    <RadioGroup
+        android:id="@+id/radioGroupRole"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"  android:gravity="center">
 
+        <RadioButton
+            android:id="@+id/radioParent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="20dp"
+            android:text="I am parent"
+            android:textSize="24sp" />
 
+        <RadioButton
+            android:id="@+id/radioChild"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="I am child"
+            android:textSize="24sp" />
+
+    </RadioGroup>
+
+    <EditText
+        android:id="@+id/etParentCode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+
+        android:background="#E0E0E0"
+        android:hint="Enter parent code"
+        android:padding="12dp"
+        android:textSize="24sp"
+        android:visibility="gone"
+        tools:visibility="visible" />
 
     <Button
 
