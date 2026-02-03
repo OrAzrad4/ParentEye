@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "570139222345",
+    "project_id": "parenteye-d09d0",
+    "storage_bucket": "parenteye-d09d0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:570139222345:android:81dc39e3e64eb1d39f7a98",
+        "android_client_info": {
+          "package_name": "com.example.parenteye"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJGAYI6VM-JYRSg640IgJdWFtOXIhnPUk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".LoginFragment">
+
+    <TextView
+        android:gravity="center"
+        android:id="@+id/ParentEye1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ParentEye"
+        android:textColor="#7E8345"
+        android:textColorLink="#944B4B"
+        android:textSize="48sp" />
+
+    <EditText
+        android:id="@+id/EmailReg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:ems="10"
+        android:inputType="textEmailAddress"
+        android:padding="20dp"
+        android:hint="Email"
+        android:textSize="34sp" />
+
+    <EditText
+        android:id="@+id/PasswordReg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:ems="10"
+        android:padding="20dp"
+        android:inputType="textPassword"
+        android:hint="Password"
+        android:textSize="34sp" />
+    <EditText
+        android:id="@+id/PhoneReg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:ems="10"
+        android:padding="20dp"
+        android:inputType = "phone"
+        android:hint="Phone"
+        android:textSize="34sp" />
+
+    <EditText
+        android:id="@+id/IdReg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:ems="10"
+        android:padding="20dp"
+        android:inputType = "number"
+        android:hint="Id"
+        android:textSize="34sp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+
+
+    <Button
+
+        android:id="@+id/RegisterReg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:backgroundTint="#828746"
+        android:text="Register"
+        android:textSize="34sp"
+        android:layout_marginHorizontal="50dp"
+        android:layout_marginBottom="30dp"/>
+</LinearLayout>
