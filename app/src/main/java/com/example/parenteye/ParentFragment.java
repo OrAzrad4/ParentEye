@@ -1,12 +1,20 @@
 package com.example.parenteye;
 
+import android.content.Context;
 import android.os.Bundle;
 
+import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultCallerLauncher;
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -23,6 +31,8 @@ public class ParentFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+
+
 
     public ParentFragment() {
         // Required empty public constructor
@@ -52,6 +62,7 @@ public class ParentFragment extends Fragment {
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
+
         }
     }
 

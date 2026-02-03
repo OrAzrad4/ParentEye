@@ -1,6 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ChildFragment"/>
+    android:orientation="vertical"
+    android:background="#F5F5F5"
+    tools:context=".ChildFragment">
+
+    <TextView
+        android:gravity="center"
+        android:id="@+id/ParentEye2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ParentEye"
+        android:textColor="#7E8345"
+        android:textColorLink="#944B4B"
+        android:textSize="48sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/btnSOS"
+            android:layout_width="250dp"
+            android:layout_height="250dp"
+            android:text="SOS"
+            android:textSize="60sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+
+            android:backgroundTint="#FF0000"
+            app:rippleColor="#FFFFFF"
+            app:cornerRadius="125dp"
+
+            android:elevation="10dp"
+            android:layout_marginBottom="20dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Press on emergency"
+            android:textSize="20sp"
+            android:textColor="#666666"/>
+
+    </LinearLayout>
+
+</LinearLayout>
