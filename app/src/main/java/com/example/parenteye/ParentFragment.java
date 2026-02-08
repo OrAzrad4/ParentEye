@@ -1,75 +1,108 @@
 package com.example.parenteye;
 
-import android.content.Context;
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
-
-import androidx.activity.EdgeToEdge;
-import androidx.activity.result.ActivityResultCallerLauncher;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.Fragment;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import java.util.HashMap;
+import java.util.Map;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
+public class ParentFragment extends Fragment implements OnMapReadyCallback {
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link ParentFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class ParentFragment extends Fragment {
+    private GoogleMap mMap;
+    private final Map<String, Marker> mMarkers = new HashMap<>();
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    public ParentFragment() { }
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-
-
-    public ParentFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ParentFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ParentFragment newInstance(String param1, String param2) {
-        ParentFragment fragment = new ParentFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // וודא ש-fragment_parent.xml מכיל את ה-FragmentContainerView של המפה כמו שסיכמנו
+        return inflater.inflate(R.layout.fragment_parent, container, false);
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(this);
         }
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_parent, container, false);
+    public void onMapReady(@NonNull GoogleMap googleMap) {
+        mMap = googleMap;
+
+        // 1. הצגת המיקום של ההורה (הנקודה הכחולה)
+        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            mMap.setMyLocationEnabled(true);
+        } else {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        }
+
+        // 2. האזנה לילדים
+        String myUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("Users");
+
+        usersRef.orderByChild("parentUid").equalTo(myUid).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                boolean hasChildren = false;
+
+                for (DataSnapshot childSnapshot : snapshot.getChildren()) {
+                    User child = childSnapshot.getValue(User.class);
+                    if (child == null || (child.getLatitude() == 0 && child.getLongitude() == 0)) continue;
+
+                    LatLng location = new LatLng(child.getLatitude(), child.getLongitude());
+                    hasChildren = true;
+                    builder.include(location);
+
+                    if (mMarkers.containsKey(child.getUid())) {
+                        Marker marker = mMarkers.get(child.getUid());
+                        marker.setPosition(location);
+                        marker.setIcon(BitmapDescriptorFactory.defaultMarker(
+                                child.isSosActive() ? BitmapDescriptorFactory.HUE_RED : BitmapDescriptorFactory.HUE_GREEN));
+                    } else {
+                        Marker marker = mMap.addMarker(new MarkerOptions()
+                                .position(location)
+                                .title(child.getEmail())
+                                .icon(BitmapDescriptorFactory.defaultMarker(
+                                        child.isSosActive() ? BitmapDescriptorFactory.HUE_RED : BitmapDescriptorFactory.HUE_GREEN)));
+                        // הערה: כאן הנחתי ש-getId() מחזיר את ה-UID, אם לא, השתמש ב-childSnapshot.getKey()
+                        mMarkers.put(childSnapshot.getKey(), marker);
+                    }
+                }
+
+                // זום אוטומטי
+                if (hasChildren) {
+                    try { mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 100)); } catch (Exception e) {}
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        });
     }
 }

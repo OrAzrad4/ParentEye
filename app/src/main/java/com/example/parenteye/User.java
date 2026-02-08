@@ -3,59 +3,50 @@ package com.example.parenteye;
 public class User {
 
     private String email;
-    private String password;
     private String phone;
-    private String id;
+    private String uid;
     private boolean isParent;
+    private String parentUid; // מזהה ההורה (לילדים בלבד)
+    private double latitude;  // קו רוחב
+    private double longitude; // קו אורך
+    private boolean isSosActive; // האם ה-SOS דולק
 
-    public User(){
-
+    public User() {
+        // חובה עבור Firebase
     }
-    public User(String email, String password, String phone, String id, boolean isParent) {
+
+    // בנאי מלא
+    public User(String email, String phone, String uid, boolean isParent, String parentUid) {
         this.email = email;
-        this.password = password;
         this.phone = phone;
-        this.id = id;
+        this.uid = uid;
         this.isParent = isParent;
+        this.parentUid = parentUid;
+        this.isSosActive = false; // ברירת מחדל
     }
 
-    public String getEmail() {
-        return email;
-    }
+    // Getters and Setters
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
 
-    public String getPassword() {
-        return password;
-    }
+    public String getUid() { return uid; }
+    public void setUid(String uid) { this.uid = uid; }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    public boolean isParent() { return isParent; }
+    public void setParent(boolean parent) { isParent = parent; }
 
-    public String getPhone() {
-        return phone;
-    }
+    public String getParentUid() { return parentUid; }
+    public void setParentUid(String parentUid) { this.parentUid = parentUid; }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
+    public double getLatitude() { return latitude; }
+    public void setLatitude(double latitude) { this.latitude = latitude; }
 
-    public String getId() {
-        return id;
-    }
+    public double getLongitude() { return longitude; }
+    public void setLongitude(double longitude) { this.longitude = longitude; }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public boolean isParent() {
-        return isParent;
-    }
-
-    public void setParent(boolean parent) {
-        isParent = parent;
-    }
+    public boolean isSosActive() { return isSosActive; }
+    public void setSosActive(boolean sosActive) { isSosActive = sosActive; }
 }
