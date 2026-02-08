@@ -7,27 +7,45 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.Navigation;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-
+/**
+ * A simple {@link Fragment} subclass.
+ * Use the {@link RegisterFragment#newInstance} factory method to
+ * create an instance of this fragment.
+ */
 public class RegisterFragment extends Fragment {
 
-    private FirebaseAuth mAuth;
-    private DatabaseReference mDbRef;
+    private static final String ARG_PARAM1 = "param1";
+    private static final String ARG_PARAM2 = "param2";
+
+    private String mParam1;
+    private String mParam2;
 
     public RegisterFragment() {
         // Required empty public constructor
+    }
+
+    public static RegisterFragment newInstance(String param1, String param2) {
+        RegisterFragment fragment = new RegisterFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_PARAM1, param1);
+        args.putString(ARG_PARAM2, param2);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            mParam1 = getArguments().getString(ARG_PARAM1);
+            mParam2 = getArguments().getString(ARG_PARAM2);
+        }
     }
 
     @Override
@@ -35,81 +53,51 @@ public class RegisterFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_register, container, false);
 
-        mAuth = FirebaseAuth.getInstance();
-        mDbRef = FirebaseDatabase.getInstance().getReference("Users");
-
-        EditText etEmail = view.findViewById(R.id.EmailReg); // וודא שזה ה-ID ב-XML
-        EditText etPassword = view.findViewById(R.id.PasswordReg); // וודא שזה ה-ID ב-XML
-        EditText etPhone = view.findViewById(R.id.PhoneReg); // אם יש לך שדה טלפון
-
-        // רכיבים חדשים שצריך להוסיף ל-XML שלך:
+        EditText etEmail = view.findViewById(R.id.EmailReg);
+        EditText etPassword = view.findViewById(R.id.PasswordReg);
+        EditText etPhone = view.findViewById(R.id.PhoneReg);
         CheckBox cbIsChild = view.findViewById(R.id.cbIsChild);
         EditText etParentEmail = view.findViewById(R.id.ParentEmail);
         Button btnRegister = view.findViewById(R.id.RegisterReg);
 
-        // הסתרה/הצגה של שדה אימייל הורה
         etParentEmail.setVisibility(View.GONE);
-        cbIsChild.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            etParentEmail.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+
+        cbIsChild.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    etParentEmail.setVisibility(View.VISIBLE);
+                } else {
+                    etParentEmail.setVisibility(View.GONE);
+                }
+            }
         });
 
-        btnRegister.setOnClickListener(v -> {
-            String email = etEmail.getText().toString().trim();
-            String password = etPassword.getText().toString().trim();
-            String phone = etPhone != null ? etPhone.getText().toString() : "";
-            boolean isChild = cbIsChild.isChecked();
-            String parentEmailInput = etParentEmail.getText().toString().trim();
+        btnRegister.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String email = etEmail.getText().toString().trim();
+                String password = etPassword.getText().toString().trim();
+                String phone = etPhone.getText().toString();
+                boolean isChild = cbIsChild.isChecked();
+                String parentEmailInput = etParentEmail.getText().toString().trim();
 
-            if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
-                Toast.makeText(getContext(), "נא למלא את כל השדות", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            if (isChild && TextUtils.isEmpty(parentEmailInput)) {
-                Toast.makeText(getContext(), "ילד חייב להזין אימייל של הורה", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            // יצירת משתמש ב-Auth
-            mAuth.createUserWithEmailAndPassword(email, password).addOnSuccessListener(authResult -> {
-                String uid = authResult.getUser().getUid();
-
-                if (isChild) {
-                    // חיפוש ההורה לפי אימייל
-                    mDbRef.orderByChild("email").equalTo(parentEmailInput)
-                            .addListenerForSingleValueEvent(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                    if (snapshot.exists()) {
-                                        for (DataSnapshot parentSnapshot : snapshot.getChildren()) {
-                                            String parentUid = parentSnapshot.getKey();
-
-                                            // יצירת הילד ושמירת הקישור להורה
-                                            User newUser = new User(email, phone, uid, false, parentUid);
-                                            mDbRef.child(uid).setValue(newUser);
-
-                                            // סיום
-                                            Toast.makeText(getContext(), "נרשמת בהצלחה!", Toast.LENGTH_SHORT).show();
-                                            Navigation.findNavController(view).navigate(R.id.action_registerFragment_to_loginFragment);
-                                        }
-                                    } else {
-                                        Toast.makeText(getContext(), "לא נמצא הורה עם האימייל הזה", Toast.LENGTH_LONG).show();
-                                    }
-                                }
-
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError error) { }
-                            });
-                } else {
-                    // רישום הורה רגיל
-                    User newUser = new User(email, phone, uid, true, null);
-                    mDbRef.child(uid).setValue(newUser);
-                    Toast.makeText(getContext(), "הורה נרשם בהצלחה!", Toast.LENGTH_SHORT).show();
-                    Navigation.findNavController(view).navigate(R.id.action_registerFragment_to_loginFragment);
+                if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
+                    Toast.makeText(getContext(), "Empty fields", Toast.LENGTH_SHORT).show();
+                    return;
                 }
-            }).addOnFailureListener(e -> {
-                Toast.makeText(getContext(), "שגיאה ברישום: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            });
+
+                if (isChild && TextUtils.isEmpty(parentEmailInput)) {
+                    Toast.makeText(getContext(), "Enter parent email", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // העברת הלוגיקה ל-MainActivity
+                MainActivity mainActivity = (MainActivity) getActivity();
+                if (mainActivity != null) {
+                    mainActivity.register(email, password, phone, isChild, parentEmailInput, view);
+                }
+            }
         });
 
         return view;

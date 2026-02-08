@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -27,7 +28,18 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A simple {@link Fragment} subclass.
+ * Use the {@link ChildFragment#newInstance} factory method to
+ * create an instance of this fragment.
+ */
 public class ChildFragment extends Fragment {
+
+    private static final String ARG_PARAM1 = "param1";
+    private static final String ARG_PARAM2 = "param2";
+
+    private String mParam1;
+    private String mParam2;
 
     private FusedLocationProviderClient fusedLocationClient;
     private LocationCallback locationCallback;
@@ -39,6 +51,24 @@ public class ChildFragment extends Fragment {
         // Required empty public constructor
     }
 
+    public static ChildFragment newInstance(String param1, String param2) {
+        ChildFragment fragment = new ChildFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_PARAM1, param1);
+        args.putString(ARG_PARAM2, param2);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            mParam1 = getArguments().getString(ARG_PARAM1);
+            mParam2 = getArguments().getString(ARG_PARAM2);
+        }
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -47,92 +77,88 @@ public class ChildFragment extends Fragment {
         btnSOS = view.findViewById(R.id.btnSOS);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
-        // אתחול הרפרנס לפיירבייס מראש
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         myRef = FirebaseDatabase.getInstance().getReference("Users").child(uid);
 
-        // הגדרת מה קורה כשמגיע מיקום חדש
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(@NonNull LocationResult locationResult) {
                 if (locationResult.getLastLocation() != null) {
-                    // יש מיקום! נעדכן את פיירבייס
                     double lat = locationResult.getLastLocation().getLatitude();
                     double lng = locationResult.getLastLocation().getLongitude();
-                    updateLocationInFirebase(lat, lng);
+                    updateLocation(lat, lng);
                 }
             }
         };
 
-        btnSOS.setOnClickListener(v -> toggleSosState());
+        btnSOS.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleSos();
+            }
+        });
+        android.widget.ImageButton btnLogout = view.findViewById(R.id.btnLogout);
+
+        // מגדירים מה קורה כשלוחצים עליו
+        btnLogout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 1. התנתקות מפיירבייס
+                FirebaseAuth.getInstance().signOut();
+
+                // 2. מעבר למסך הכניסה
+                // וודא ש-loginFragment זה השם הנכון ב-navgraph.xml שלך
+                // אם יש לך action מסודר, תחליף ל-R.id.action_child_to_login
+                Navigation.findNavController(view).navigate(R.id.action_childFragment_to_loginFragment);
+            }
+        });
 
         return view;
     }
 
-    private void toggleSosState() {
+    private void toggleSos() {
         isSosActive = !isSosActive;
-
         if (isSosActive) {
-            // מצב 1: הדלקת SOS
-
-            // א. קודם כל ולפני הכל - מעדכנים את פיירבייס שהמצב דולק!
-            updateSosStatus(true);
-
-            // ב. משנים את העיצוב
-            btnSOS.setText("בטל מצוקה");
+            myRef.child("isSosActive").setValue(true);
+            btnSOS.setText("Stop SOS");
             btnSOS.setBackgroundColor(getResources().getColor(android.R.color.holo_red_dark));
-
-            // ג. מתחילים את שידור המיקום
-            startLocationUpdates();
-
+            startLocation();
         } else {
-            // מצב 2: כיבוי SOS
-
-            // א. מפסיקים את השידור
-            stopLocationUpdates();
-
-            // ב. מעדכנים את פיירבייס שהמצב כבוי
-            updateSosStatus(false);
-
-            // ג. מחזירים עיצוב
+            stopLocation();
+            myRef.child("isSosActive").setValue(false);
             btnSOS.setText("SOS");
-            btnSOS.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
+            btnSOS.setBackgroundColor(getResources().getColor(android.R.color.holo_red_dark));
         }
     }
 
-    private void updateSosStatus(boolean isActive) {
-        // עדכון ישיר ומהיר רק של הסטטוס
-        myRef.child("isSosActive").setValue(isActive)
-                .addOnFailureListener(e -> Toast.makeText(getContext(), "שגיאה בעדכון סטטוס", Toast.LENGTH_SHORT).show());
-    }
-
-    private void updateLocationInFirebase(double lat, double lng) {
-        // עדכון המיקום (אנחנו שולחים גם את ה-SOS ליתר ביטחון)
+    private void updateLocation(double lat, double lng) {
         Map<String, Object> updates = new HashMap<>();
         updates.put("latitude", lat);
         updates.put("longitude", lng);
-        updates.put("isSosActive", true); // מוודאים שזה נשאר דולק בזמן השידור
-
+        updates.put("isSosActive", true);
         myRef.updateChildren(updates);
     }
 
-    private void startLocationUpdates() {
+    private void startLocation() {
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             return;
         }
-
-        // בקשת מיקום אגרסיבית (כל 3 שניות) לדיוק מירבי
-        LocationRequest locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 3000)
-                .setMinUpdateIntervalMillis(2000)
-                .build();
-
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
-        Toast.makeText(getContext(), "התראת מצוקה הופעלה!", Toast.LENGTH_SHORT).show();
+        LocationRequest req = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 90000).build();
+        fusedLocationClient.requestLocationUpdates(req, locationCallback, Looper.getMainLooper());
+        Toast.makeText(getContext(), "SOS Started", Toast.LENGTH_SHORT).show();
     }
 
-    private void stopLocationUpdates() {
+    private void stopLocation() {
         fusedLocationClient.removeLocationUpdates(locationCallback);
-        Toast.makeText(getContext(), "מצב מצוקה בוטל", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "SOS Stopped", Toast.LENGTH_SHORT).show();
+    }
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        // עצירת ה-GPS כשהמסך נסגר כדי למנוע קריסה
+        if (fusedLocationClient != null && locationCallback != null) {
+            fusedLocationClient.removeLocationUpdates(locationCallback);
+        }
     }
 }

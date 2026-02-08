@@ -39,10 +39,18 @@
         android:id="@+id/childFragment"
         android:name="com.example.parenteye.ChildFragment"
         android:label="fragment_child"
-        tools:layout="@layout/fragment_child" />
+        tools:layout="@layout/fragment_child" >
+        <action
+            android:id="@+id/action_childFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+    </fragment>
     <fragment
         android:id="@+id/parentFragment"
         android:name="com.example.parenteye.ParentFragment"
         android:label="fragment_parent"
-        tools:layout="@layout/fragment_parent" />
+        tools:layout="@layout/fragment_parent" >
+        <action
+            android:id="@+id/action_parentFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+    </fragment>
 </navigation>

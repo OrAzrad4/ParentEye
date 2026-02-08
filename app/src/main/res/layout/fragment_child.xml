@@ -6,8 +6,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F5F5F5"
-    tools:context=".ChildFragment">
+    tools:context=".ChildFragment"
+    android:keepScreenOn="true"
+    android:background="@drawable/map_background">
+    <ImageButton
+        android:id="@+id/btnLogout"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_gravity="end"
+        android:layout_margin="10dp"
+        android:layout_marginTop="70dp"
+        android:src="@drawable/logout"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        app:tint="#D32F2F"
+        />
 
     <TextView
         android:gravity="center"
@@ -17,6 +29,7 @@
         android:text="ParentEye"
         android:textColor="#7E8345"
         android:textColorLink="#944B4B"
+        android:layout_marginTop="10dp"
         android:textSize="48sp" />
 
     <LinearLayout
@@ -46,8 +59,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Press on emergency"
-            android:textSize="20sp"
-            android:textColor="#666666"/>
+            android:textColor="#FF0000"
+            android:textSize="20sp" />
 
     </LinearLayout>
 
