@@ -92,10 +92,9 @@ public class RegisterFragment extends Fragment {
                     return;
                 }
 
-                // העברת הלוגיקה ל-MainActivity
                 MainActivity mainActivity = (MainActivity) getActivity();
                 if (mainActivity != null) {
-                    mainActivity.register(email, password, phone, isChild, parentEmailInput, view);
+                    mainActivity.register(email, password, phone, isChild, parentEmailInput);
                 }
             }
         });

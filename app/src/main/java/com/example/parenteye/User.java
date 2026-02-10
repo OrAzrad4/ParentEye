@@ -6,23 +6,22 @@ public class User {
     private String phone;
     private String uid;
     private boolean isParent;
-    private String parentUid; // מזהה ההורה (לילדים בלבד)
-    private double latitude;  // קו רוחב
-    private double longitude; // קו אורך
-    private boolean isSosActive; // האם ה-SOS דולק
+    private String parentUid;
+    private double latitude;
+    private double longitude;
+    private boolean isSosActive;
 
     public User() {
-        // חובה עבור Firebase
     }
 
-    // בנאי מלא
+
     public User(String email, String phone, String uid, boolean isParent, String parentUid) {
         this.email = email;
         this.phone = phone;
         this.uid = uid;
         this.isParent = isParent;
         this.parentUid = parentUid;
-        this.isSosActive = false; // ברירת מחדל
+        this.isSosActive = false;
     }
 
     // Getters and Setters

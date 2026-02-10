@@ -71,7 +71,7 @@ public class LoginFragment extends Fragment {
 
                 MainActivity mainActivity = (MainActivity) getActivity();
                 if (mainActivity != null) {
-                    mainActivity.login(email, password, view);
+                    mainActivity.login(email, password);
                 }
             }
         });
