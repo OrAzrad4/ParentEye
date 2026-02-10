@@ -86,7 +86,7 @@ public class ChildFragment extends Fragment {
             @Override
             public void onLocationResult(@NonNull LocationResult locationResult) {
                 if (locationResult.getLastLocation() != null) {
-                    // Get coords and push to Firebase
+                    // Get coordinates and push to Firebase
                     double lat = locationResult.getLastLocation().getLatitude();
                     double lng = locationResult.getLastLocation().getLongitude();
                     updateLocation(lat, lng);
