@@ -116,25 +116,49 @@ public class ChildFragment extends Fragment {
         return view;
     }
 
-    // Switches SOS mode on/off
     private void toggleSos() {
-        isSosActive = !isSosActive; // Flip the boolean
+        // 1. Check if we have permissions for SMS and Location
+        if (androidx.core.app.ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED ||
+                androidx.core.app.ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            // If permissions are missing, ask the user for them
+            requestPermissions(new String[]{Manifest.permission.SEND_SMS, Manifest.permission.ACCESS_FINE_LOCATION}, 101);
+
+            // Stop here! Do not turn on SOS yet. The user needs to approve first.
+            return;
+        }
+
+        // 2. If we are here, we have permissions. Now we can toggle the status.
+        isSosActive = !isSosActive;
 
         if (isSosActive) {
-            // Turning ON: update DB, change button look, start tracking
+            // --- SOS is ON ---
+
+            // Update Firebase
             myRef.child("isSosActive").setValue(true);
+
+            // Update Button UI (Change text to "Stop")
             btnSOS.setText("Stop SOS");
             btnSOS.setBackgroundColor(getResources().getColor(android.R.color.holo_red_dark));
-            startLocation();
+
+            // Start actions
+            startLocation(); // Start GPS
+            sendSms();       // Send the SMS
+
         } else {
-            // Turning OFF: stop tracking, update DB, reset button
+            // --- SOS is OFF ---
+
+            // Stop GPS to save battery
             stopLocation();
+
+            // Update Firebase
             myRef.child("isSosActive").setValue(false);
+
+            // Update Button UI (Change text back to "SOS")
             btnSOS.setText("SOS");
             btnSOS.setBackgroundColor(getResources().getColor(android.R.color.holo_red_dark));
         }
     }
-
     // Helper to save location data to Firebase
     private void updateLocation(double lat, double lng) {
         Map<String, Object> updates = new HashMap<>();
@@ -170,6 +194,25 @@ public class ChildFragment extends Fragment {
         super.onDestroyView();
         if (fusedLocationClient != null && locationCallback != null) {
             fusedLocationClient.removeLocationUpdates(locationCallback);
+        }
+    }
+
+    // Send SMS
+    private static final String EMERGENCY_PHONE_NUMBER = "0526875135"; // Police or Ambulance
+
+    private void sendSms() {
+        // Check permission
+        if (androidx.core.app.ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.SEND_SMS) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            try {
+                android.telephony.SmsManager smsManager = android.telephony.SmsManager.getDefault();
+                smsManager.sendTextMessage(EMERGENCY_PHONE_NUMBER, null, "The child is in an emergency, he presses the SOS button.", null, null);
+                android.widget.Toast.makeText(getContext(), "SMS sent", android.widget.Toast.LENGTH_SHORT).show();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            // Ask for permission
+            requestPermissions(new String[]{android.Manifest.permission.SEND_SMS}, 101);
         }
     }
 }
