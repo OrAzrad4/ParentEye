@@ -12,14 +12,9 @@ import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link LoginFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class LoginFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
+    // Default fragment initialization parameters
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
@@ -27,7 +22,7 @@ public class LoginFragment extends Fragment {
     private String mParam2;
 
     public LoginFragment() {
-        // Required empty public constructor
+        // Empty public constructor
     }
 
     public static LoginFragment newInstance(String param1, String param2) {
@@ -51,24 +46,30 @@ public class LoginFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_login, container, false);
 
+        // Initialize UI components
         EditText etEmail = view.findViewById(R.id.Email);
         EditText etPassword = view.findViewById(R.id.Password);
         Button btnLogin = view.findViewById(R.id.Login);
         Button btnRegister = view.findViewById(R.id.Register);
 
+        // Handle login button click
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Get input text
                 String email = etEmail.getText().toString().trim();
                 String password = etPassword.getText().toString().trim();
 
+                // Simple validation to check for empty fields
                 if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
                     Toast.makeText(getContext(), "Please fill all fields", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
+                // Call the login function in MainActivity
                 MainActivity mainActivity = (MainActivity) getActivity();
                 if (mainActivity != null) {
                     mainActivity.login(email, password);
@@ -76,15 +77,15 @@ public class LoginFragment extends Fragment {
             }
         });
 
-        if (btnRegister != null) {
-            btnRegister.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    NavHostFragment.findNavController(LoginFragment.this)
-                            .navigate(R.id.action_loginFragment_to_registerFragment);
-                }
-            });
-        }
+        // Handle register button click - navigate to sign up screen
+
+        btnRegister.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                NavHostFragment.findNavController(LoginFragment.this)
+                        .navigate(R.id.action_loginFragment_to_registerFragment);
+            }
+        });
 
         return view;
     }

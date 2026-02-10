@@ -13,11 +13,6 @@ import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link RegisterFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class RegisterFragment extends Fragment {
 
     private static final String ARG_PARAM1 = "param1";
@@ -27,7 +22,7 @@ public class RegisterFragment extends Fragment {
     private String mParam2;
 
     public RegisterFragment() {
-        // Required empty public constructor
+        // Empty public constructor
     }
 
     public static RegisterFragment newInstance(String param1, String param2) {
@@ -51,8 +46,10 @@ public class RegisterFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_register, container, false);
 
+        // Initialize UI views
         EditText etEmail = view.findViewById(R.id.EmailReg);
         EditText etPassword = view.findViewById(R.id.PasswordReg);
         EditText etPhone = view.findViewById(R.id.PhoneReg);
@@ -60,8 +57,10 @@ public class RegisterFragment extends Fragment {
         EditText etParentEmail = view.findViewById(R.id.ParentEmail);
         Button btnRegister = view.findViewById(R.id.RegisterReg);
 
+        // Hide parent email field by default
         etParentEmail.setVisibility(View.GONE);
 
+        // Toggle parent email visibility based on checkbox
         cbIsChild.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -73,25 +72,30 @@ public class RegisterFragment extends Fragment {
             }
         });
 
+        // Handle register button click
         btnRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Get input values
                 String email = etEmail.getText().toString().trim();
                 String password = etPassword.getText().toString().trim();
                 String phone = etPhone.getText().toString();
                 boolean isChild = cbIsChild.isChecked();
                 String parentEmailInput = etParentEmail.getText().toString().trim();
 
+                // Validation for empty fields
                 if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
                     Toast.makeText(getContext(), "Empty fields", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
+                // If user is a child, parent email is required
                 if (isChild && TextUtils.isEmpty(parentEmailInput)) {
                     Toast.makeText(getContext(), "Enter parent email", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
+                // Call the register function in MainActivity
                 MainActivity mainActivity = (MainActivity) getActivity();
                 if (mainActivity != null) {
                     mainActivity.register(email, password, phone, isChild, parentEmailInput);

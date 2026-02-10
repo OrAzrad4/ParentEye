@@ -28,21 +28,20 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link ChildFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class ChildFragment extends Fragment {
 
+    // Default params
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
     private String mParam1;
     private String mParam2;
 
+    // Location vars
     private FusedLocationProviderClient fusedLocationClient;
     private LocationCallback locationCallback;
+
+    // Logic vars
     private boolean isSosActive = false;
     private Button btnSOS;
     private DatabaseReference myRef;
@@ -74,16 +73,20 @@ public class ChildFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_child, container, false);
 
+        // Init UI and Location client
         btnSOS = view.findViewById(R.id.btnSOS);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
+        // Setup Firebase reference to the current user's node
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         myRef = FirebaseDatabase.getInstance().getReference("Users").child(uid);
 
+        // Define what happens when we get a new GPS location
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(@NonNull LocationResult locationResult) {
                 if (locationResult.getLastLocation() != null) {
+                    // Get coords and push to Firebase
                     double lat = locationResult.getLastLocation().getLatitude();
                     double lng = locationResult.getLastLocation().getLongitude();
                     updateLocation(lat, lng);
@@ -91,24 +94,21 @@ public class ChildFragment extends Fragment {
             }
         };
 
+        // Handle SOS button toggle
         btnSOS.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 toggleSos();
             }
         });
-        android.widget.ImageButton btnLogout = view.findViewById(R.id.btnLogout);
 
-        // מגדירים מה קורה כשלוחצים עליו
+        // Handle Logout
+        android.widget.ImageButton btnLogout = view.findViewById(R.id.btnLogout);
         btnLogout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // 1. התנתקות מפיירבייס
                 FirebaseAuth.getInstance().signOut();
-
-                // 2. מעבר למסך הכניסה
-                // וודא ש-loginFragment זה השם הנכון ב-navgraph.xml שלך
-                // אם יש לך action מסודר, תחליף ל-R.id.action_child_to_login
+                // Go back to login screen
                 Navigation.findNavController(view).navigate(R.id.action_childFragment_to_loginFragment);
             }
         });
@@ -116,14 +116,18 @@ public class ChildFragment extends Fragment {
         return view;
     }
 
+    // Switches SOS mode on/off
     private void toggleSos() {
-        isSosActive = !isSosActive;
+        isSosActive = !isSosActive; // Flip the boolean
+
         if (isSosActive) {
+            // Turning ON: update DB, change button look, start tracking
             myRef.child("isSosActive").setValue(true);
             btnSOS.setText("Stop SOS");
             btnSOS.setBackgroundColor(getResources().getColor(android.R.color.holo_red_dark));
             startLocation();
         } else {
+            // Turning OFF: stop tracking, update DB, reset button
             stopLocation();
             myRef.child("isSosActive").setValue(false);
             btnSOS.setText("SOS");
@@ -131,32 +135,39 @@ public class ChildFragment extends Fragment {
         }
     }
 
+    // Helper to save location data to Firebase
     private void updateLocation(double lat, double lng) {
         Map<String, Object> updates = new HashMap<>();
         updates.put("latitude", lat);
         updates.put("longitude", lng);
-        updates.put("isSosActive", true);
+        updates.put("isSosActive", true); // Keep status active while tracking
         myRef.updateChildren(updates);
     }
 
+    // Start requesting GPS updates
     private void startLocation() {
+        // First check if we have permission
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             return;
         }
+
+        // Setup request: High accuracy, update frequently
         LocationRequest req = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 90000).build();
         fusedLocationClient.requestLocationUpdates(req, locationCallback, Looper.getMainLooper());
         Toast.makeText(getContext(), "SOS Started", Toast.LENGTH_SHORT).show();
     }
 
+    // Stop GPS updates to save battery
     private void stopLocation() {
         fusedLocationClient.removeLocationUpdates(locationCallback);
         Toast.makeText(getContext(), "SOS Stopped", Toast.LENGTH_SHORT).show();
     }
+
+    // Cleanup when leaving the fragment
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // עצירת ה-GPS כשהמסך נסגר כדי למנוע קריסה
         if (fusedLocationClient != null && locationCallback != null) {
             fusedLocationClient.removeLocationUpdates(locationCallback);
         }
