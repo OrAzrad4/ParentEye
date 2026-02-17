@@ -33,18 +33,6 @@ public class MainActivity extends AppCompatActivity {
         // Init Firebase Auth and Database reference
         mAuth = FirebaseAuth.getInstance();
         mDbRef = FirebaseDatabase.getInstance().getReference("Users");
-
-        // Setup Navigation Controller
-        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.fragmentContainerView);
-
-        if (navHostFragment != null) {
-            navController = navHostFragment.getNavController();
-            NavGraph navGraph = navController.getNavInflater().inflate(R.navigation.navgraph);
-            // Start Login screen
-            navGraph.setStartDestination(R.id.loginFragment);
-            navController.setGraph(navGraph);
-        }
     }
 
     // Handle login using Firebase Auth
@@ -64,9 +52,33 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
     }
+    // Check user role (Parent vs Child) and update screen
+    /* SingleValueEvent for bringing data just once from DB for effective use, and now check if this is parent or not, and navigate to the correct fragment*/
+    public void checkRoleAndNavigate(String uid) {
+        mDbRef.child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) { // This function called when firebase bring response
+                if (snapshot.exists()) {       // Json-> User object
+                    User user = snapshot.getValue(User.class);
+                    NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.fragmentContainerView);
+                    NavController navController = navHostFragment.getNavController();
+                    // Set start destination based on role
+                    if (user.isParent()) {
+                        navController.navigate(R.id.action_loginFragment_to_parentFragment);
+                    } else {
+                        navController.navigate(R.id.action_loginFragment_to_childFragment);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}  //Must fot firebase
+        });
+    }
+
 
     // Register new user
-    // If it's a child, we need to link them to a parent
+    // If it's a child, we need to link him to a parent
     public void register(String email, String password, String phone, boolean isChild, String parentEmail) {
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -91,12 +103,12 @@ public class MainActivity extends AppCompatActivity {
 
     // Search for parent by email in DB
     public void findParentAndSave(String childUid, String email, String phone, String parentEmail) {
-        mDbRef.orderByChild("email").equalTo(parentEmail)
+        mDbRef.orderByChild("email").equalTo(parentEmail) // Find the correct parent from DB
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (snapshot.exists()) {
-                            // Parent found, get their UID
+                            // Parent found                          bring the first element from DB list and save the parent UID
                             DataSnapshot parentSnapshot = snapshot.getChildren().iterator().next();
                             String parentUid = parentSnapshot.getKey();
 
@@ -127,28 +139,4 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    // Check user role (Parent vs Child) and update UI
-    public void checkRoleAndNavigate(String uid) {
-        mDbRef.child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.exists()) {
-                    User user = snapshot.getValue(User.class);
-                    if (user != null) {
-                        NavGraph navGraph = navController.getNavInflater().inflate(R.navigation.navgraph);
-
-                        // Set start destination based on role
-                        if (user.isParent()) {
-                            navGraph.setStartDestination(R.id.parentFragment);
-                        } else {
-                            navGraph.setStartDestination(R.id.childFragment);
-                        }
-                        navController.setGraph(navGraph);
-                    }
-                }
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {}
-        });
-    }
 }

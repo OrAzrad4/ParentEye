@@ -71,9 +71,8 @@ public class LoginFragment extends Fragment {
 
                 // Call the login function in MainActivity
                 MainActivity mainActivity = (MainActivity) getActivity();
-                if (mainActivity != null) {
                     mainActivity.login(email, password);
-                }
+
             }
         });
 

@@ -94,7 +94,7 @@ public class ChildFragment extends Fragment {
             }
         };
 
-        // Handle SOS button toggle
+        // Handle SOS button
         btnSOS.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -117,7 +117,7 @@ public class ChildFragment extends Fragment {
     }
 
     private void toggleSos() {
-        // 1. Check if we have permissions for SMS and Location
+        //  Check if we have permissions for SMS and Location
         if (androidx.core.app.ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED ||
                 androidx.core.app.ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
@@ -128,7 +128,7 @@ public class ChildFragment extends Fragment {
             return;
         }
 
-        // 2. If we are here, we have permissions. Now we can toggle the status.
+        //  If we are here, we have permissions. Now we can toggle the status.
         isSosActive = !isSosActive;
 
         if (isSosActive) {
