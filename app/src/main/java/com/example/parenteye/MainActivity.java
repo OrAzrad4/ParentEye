@@ -33,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
         // Init Firebase Auth and Database reference
         mAuth = FirebaseAuth.getInstance();
         mDbRef = FirebaseDatabase.getInstance().getReference("Users");
+        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.fragmentContainerView);
+        navController = navHostFragment.getNavController();
     }
 
     // Handle login using Firebase Auth
@@ -60,8 +62,6 @@ public class MainActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) { // This function called when firebase bring response
                 if (snapshot.exists()) {       // Json-> User object
                     User user = snapshot.getValue(User.class);
-                    NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.fragmentContainerView);
-                    NavController navController = navHostFragment.getNavController();
                     // Set start destination based on role
                     if (user.isParent()) {
                         navController.navigate(R.id.action_loginFragment_to_parentFragment);
