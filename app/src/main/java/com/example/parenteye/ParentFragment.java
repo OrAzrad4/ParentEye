@@ -80,11 +80,10 @@ public class ParentFragment extends Fragment implements OnMapReadyCallback {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-        if (mapFragment != null) {
             mapFragment.getMapAsync(this);   // Call me back when map is ready and I call to OnMapReady
-        }
+
     }
-    // Check permission and update blue sign on parent location
+    // Check permission and update sign on parent location
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
@@ -112,26 +111,22 @@ public class ParentFragment extends Fragment implements OnMapReadyCallback {
                     LatLng loc = new LatLng(child.getLatitude(), child.getLongitude());
                     hasChildren = true;
                     builder.include(loc);
-                        //If the child in SOS the sign is red , else the sign is blue
-                    float color = child.isSosActive() ? BitmapDescriptorFactory.HUE_RED : BitmapDescriptorFactory.HUE_GREEN;
                         // If the child has color in map so update location and color , else, add a new one
                     if (mMarkers.containsKey(child.getUid())) {
                         Marker m = mMarkers.get(child.getUid());
                         m.setPosition(loc);
-                        m.setIcon(BitmapDescriptorFactory.defaultMarker(color));
                     } else {
-                        Marker m = mMap.addMarker(new MarkerOptions().position(loc).title(child.getEmail())
-                                .icon(BitmapDescriptorFactory.defaultMarker(color)));
+                        Marker m = mMap.addMarker(new MarkerOptions().position(loc).title(child.getEmail()));
                         mMarkers.put(child.getUid(), m);
                     }
                 }
-                    // Show the area of children effectively
                 if (hasChildren) {
                     try {
                         mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 100));
                     } catch (Exception e) {}
                 }
             }
+
             // If have any problem from Firebase do nothing
             @Override
             public void onCancelled(@NonNull DatabaseError error) {}
