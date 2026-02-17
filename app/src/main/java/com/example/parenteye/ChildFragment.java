@@ -132,21 +132,20 @@ public class ChildFragment extends Fragment {
         isSosActive = !isSosActive;
 
         if (isSosActive) {
-            // --- SOS is ON ---
+            // SOS is ON
 
             // Update Firebase
             myRef.child("isSosActive").setValue(true);
 
             // Update Button UI (Change text to "Stop")
             btnSOS.setText("Stop SOS");
-            btnSOS.setBackgroundColor(getResources().getColor(android.R.color.holo_red_dark));
 
             // Start actions
-            startLocation(); // Start GPS
-            sendSms();       // Send the SMS
+            startLocation();
+            sendSms();
 
         } else {
-            // --- SOS is OFF ---
+            // SOS is OFF
 
             // Stop GPS to save battery
             stopLocation();
@@ -156,10 +155,9 @@ public class ChildFragment extends Fragment {
 
             // Update Button UI (Change text back to "SOS")
             btnSOS.setText("SOS");
-            btnSOS.setBackgroundColor(getResources().getColor(android.R.color.holo_red_dark));
         }
     }
-    // Helper to save location data to Firebase
+    // Save location data to Firebase
     private void updateLocation(double lat, double lng) {
         Map<String, Object> updates = new HashMap<>();
         updates.put("latitude", lat);
@@ -176,7 +174,7 @@ public class ChildFragment extends Fragment {
             return;
         }
 
-        // Setup request: High accuracy, update frequently
+        // Update location every 90 seconds
         LocationRequest req = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 90000).build();
         fusedLocationClient.requestLocationUpdates(req, locationCallback, Looper.getMainLooper());
         Toast.makeText(getContext(), "SOS Started", Toast.LENGTH_SHORT).show();
